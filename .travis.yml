@@ -1,0 +1,14 @@
+sudo: false
+
+language: go
+
+services:
+  - docker
+
+go:
+  - 1.12
+
+script:
+  - set -e
+  - docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
+  - make release

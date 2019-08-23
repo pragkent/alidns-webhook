@@ -1,0 +1,232 @@
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: alidns-webhook
+  labels:
+    app: alidns-webhook
+---
+# Grant the webhook permission to read the ConfigMap containing the Kubernetes
+# apiserver's requestheader-ca-certificate.
+# This ConfigMap is automatically created by the Kubernetes apiserver.
+apiVersion: rbac.authorization.k8s.io/v1beta1
+kind: RoleBinding
+metadata:
+  name: alidns-webhook:webhook-authentication-reader
+  namespace: kube-system
+  labels:
+    app: alidns-webhook
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: extension-apiserver-authentication-reader
+subjects:
+  - apiGroup: ""
+    kind: ServiceAccount
+    name: alidns-webhook
+    namespace: default
+---
+# apiserver gets the auth-delegator role to delegate auth decisions to
+# the core apiserver
+apiVersion: rbac.authorization.k8s.io/v1beta1
+kind: ClusterRoleBinding
+metadata:
+  name: alidns-webhook:auth-delegator
+  labels:
+    app: alidns-webhook
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: system:auth-delegator
+subjects:
+  - apiGroup: ""
+    kind: ServiceAccount
+    name: alidns-webhook
+    namespace: default
+---
+# Grant cert-manager permission to validate using our apiserver
+apiVersion: rbac.authorization.k8s.io/v1beta1
+kind: ClusterRole
+metadata:
+  name: alidns-webhook:domain-solver
+  labels:
+    app: alidns-webhook
+rules:
+  - apiGroups:
+      - acme.aliyun.com
+    resources:
+      - '*'
+    verbs:
+      - 'create'
+---
+apiVersion: rbac.authorization.k8s.io/v1beta1
+kind: ClusterRoleBinding
+metadata:
+  name: alidns-webhook:domain-solver
+  labels:
+    app: alidns-webhook
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: alidns-webhook:domain-solver
+subjects:
+  - apiGroup: ""
+    kind: ServiceAccount
+    name: cert-manager
+    namespace: cert-manager
+
+---
+# Source: alidns-webhook/templates/service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: alidns-webhook
+  labels:
+    app: alidns-webhook
+spec:
+  type: ClusterIP
+  ports:
+    - port: 443
+      targetPort: https
+      protocol: TCP
+      name: https
+  selector:
+    app: alidns-webhook
+
+---
+# Source: alidns-webhook/templates/deployment.yaml
+apiVersion: apps/v1beta2
+kind: Deployment
+metadata:
+  name: alidns-webhook
+  labels:
+    app: alidns-webhook
+spec:
+  replicas: 
+  selector:
+    matchLabels:
+      app: alidns-webhook
+  template:
+    metadata:
+      labels:
+        app: alidns-webhook
+    spec:
+      serviceAccountName: alidns-webhook
+      containers:
+        - name: alidns-webhook
+          image: "webhook:0.1.0"
+          imagePullPolicy: IfNotPresent
+          args:
+            - --tls-cert-file=/tls/tls.crt
+            - --tls-private-key-file=/tls/tls.key
+          env:
+            - name: GROUP_NAME
+              value: "acme.aliyun.com"
+          ports:
+            - name: https
+              containerPort: 443
+              protocol: TCP
+          livenessProbe:
+            httpGet:
+              scheme: HTTPS
+              path: /healthz
+              port: https
+          readinessProbe:
+            httpGet:
+              scheme: HTTPS
+              path: /healthz
+              port: https
+          volumeMounts:
+            - name: certs
+              mountPath: /tls
+              readOnly: true
+          resources:
+            {}
+            
+      volumes:
+        - name: certs
+          secret:
+            secretName: alidns-webhook-webhook-tls
+
+---
+apiVersion: apiregistration.k8s.io/v1beta1
+kind: APIService
+metadata:
+  name: v1alpha1.acme.aliyun.com
+  labels:
+    app: alidns-webhook
+  annotations:
+    certmanager.k8s.io/inject-ca-from: "default/alidns-webhook-webhook-tls"
+spec:
+  group: acme.aliyun.com
+  groupPriorityMinimum: 1000
+  versionPriority: 15
+  service:
+    name: alidns-webhook
+    namespace: default
+  version: v1alpha1
+
+---
+# Create a selfsigned Issuer, in order to create a root CA certificate for
+# signing webhook serving certificates
+apiVersion: certmanager.k8s.io/v1alpha1
+kind: Issuer
+metadata:
+  name: alidns-webhook-selfsign
+  namespace: "default"
+  labels:
+    app: alidns-webhook
+spec:
+  selfSigned: {}
+
+---
+
+# Generate a CA Certificate used to sign certificates for the webhook
+apiVersion: certmanager.k8s.io/v1alpha1
+kind: Certificate
+metadata:
+  name: alidns-webhook-ca
+  namespace: "default"
+  labels:
+    app: alidns-webhook
+spec:
+  secretName: alidns-webhook-ca
+  duration: 43800h # 5y
+  issuerRef:
+    name: alidns-webhook-selfsign
+  commonName: "ca.alidns-webhook.cert-manager"
+  isCA: true
+
+---
+
+# Create an Issuer that uses the above generated CA certificate to issue certs
+apiVersion: certmanager.k8s.io/v1alpha1
+kind: Issuer
+metadata:
+  name: alidns-webhook-ca
+  namespace: "default"
+  labels:
+    app: alidns-webhook
+spec:
+  ca:
+    secretName: alidns-webhook-ca
+
+---
+
+# Finally, generate a serving certificate for the webhook to use
+apiVersion: certmanager.k8s.io/v1alpha1
+kind: Certificate
+metadata:
+  name: alidns-webhook-webhook-tls
+  namespace: "default"
+  labels:
+    app: alidns-webhook
+spec:
+  secretName: alidns-webhook-webhook-tls
+  duration: 8760h # 1y
+  issuerRef:
+    name: alidns-webhook-ca
+  dnsNames:
+  - alidns-webhook
+  - alidns-webhook.default
+  - alidns-webhook.default.svc

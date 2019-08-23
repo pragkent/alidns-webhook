@@ -1,0 +1,11 @@
+{
+  "region": "",
+  "accessKeySecretRef": {
+    "name": "alidns-secret",
+    "key": "access-key"
+  },
+  "secretKeySecretRef": {
+    "name": "alidns-secret",
+    "key": "secret-key"
+  }
+}
