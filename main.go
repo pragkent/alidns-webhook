@@ -5,7 +5,7 @@ import (
 
 	"github.com/jetstack/cert-manager/pkg/acme/webhook/cmd"
 	"github.com/pragkent/alidns-webhook/alidns"
-	"github.com/pragkent/klog"
+	"k8s.io/klog"
 )
 
 func main() {
