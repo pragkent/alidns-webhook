@@ -195,7 +195,7 @@ metadata:
   labels:
     app: alidns-webhook
   annotations:
-    cert-manager.io/inject-ca-from: "cert-manager/alidns-webhook-webhook-tls"
+    certmanager.k8s.io/inject-ca-from: "cert-manager/alidns-webhook-webhook-tls"
 spec:
   group: acme.yourcompany.com
   groupPriorityMinimum: 1000
@@ -208,7 +208,7 @@ spec:
 ---
 # Create a selfsigned Issuer, in order to create a root CA certificate for
 # signing webhook serving certificates
-apiVersion: cert-manager.io/v1alpha2
+apiVersion: certmanager.k8s.io/v1alpha1
 kind: Issuer
 metadata:
   name: alidns-webhook-selfsign
@@ -221,7 +221,7 @@ spec:
 ---
 
 # Generate a CA Certificate used to sign certificates for the webhook
-apiVersion: cert-manager.io/v1alpha2
+apiVersion: certmanager.k8s.io/v1alpha1
 kind: Certificate
 metadata:
   name: alidns-webhook-ca
@@ -239,7 +239,7 @@ spec:
 ---
 
 # Create an Issuer that uses the above generated CA certificate to issue certs
-apiVersion: cert-manager.io/v1alpha2
+apiVersion: certmanager.k8s.io/v1alpha1
 kind: Issuer
 metadata:
   name: alidns-webhook-ca
@@ -253,7 +253,7 @@ spec:
 ---
 
 # Finally, generate a serving certificate for the webhook to use
-apiVersion: cert-manager.io/v1alpha2
+apiVersion: certmanager.k8s.io/v1alpha1
 kind: Certificate
 metadata:
   name: alidns-webhook-webhook-tls
