@@ -8,7 +8,7 @@ metadata:
     app: alidns-webhook
 
 ---
-apiVersion: rbac.authorization.k8s.io/v1beta1
+apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
   name: alidns-webhook
@@ -24,7 +24,7 @@ rules:
       - 'get'
 
 ---
-apiVersion: rbac.authorization.k8s.io/v1beta1
+apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
   name: alidns-webhook
@@ -45,7 +45,7 @@ subjects:
 # Grant the webhook permission to read the ConfigMap containing the Kubernetes
 # apiserver's requestheader-ca-certificate.
 # This ConfigMap is automatically created by the Kubernetes apiserver.
-apiVersion: rbac.authorization.k8s.io/v1beta1
+apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
   name: alidns-webhook:webhook-authentication-reader
@@ -64,7 +64,7 @@ subjects:
 ---
 # apiserver gets the auth-delegator role to delegate auth decisions to
 # the core apiserver
-apiVersion: rbac.authorization.k8s.io/v1beta1
+apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
   name: alidns-webhook:auth-delegator
@@ -82,7 +82,7 @@ subjects:
     namespace: cert-manager
 ---
 # Grant cert-manager permission to validate using our apiserver
-apiVersion: rbac.authorization.k8s.io/v1beta1
+apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
   name: alidns-webhook:domain-solver
@@ -96,7 +96,7 @@ rules:
     verbs:
       - 'create'
 ---
-apiVersion: rbac.authorization.k8s.io/v1beta1
+apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
   name: alidns-webhook:domain-solver
@@ -133,7 +133,7 @@ spec:
 
 ---
 # Source: alidns-webhook/templates/deployment.yaml
-apiVersion: apps/v1beta2
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: alidns-webhook
@@ -141,7 +141,7 @@ metadata:
   labels:
     app: alidns-webhook
 spec:
-  replicas: 
+  replicas:
   selector:
     matchLabels:
       app: alidns-webhook
@@ -181,14 +181,14 @@ spec:
               readOnly: true
           resources:
             {}
-            
+
       volumes:
         - name: certs
           secret:
             secretName: alidns-webhook-webhook-tls
 
 ---
-apiVersion: apiregistration.k8s.io/v1beta1
+apiVersion: apiregistration.k8s.io/v1
 kind: APIService
 metadata:
   name: v1alpha1.acme.yourcompany.com
@@ -208,7 +208,7 @@ spec:
 ---
 # Create a selfsigned Issuer, in order to create a root CA certificate for
 # signing webhook serving certificates
-apiVersion: cert-manager.io/v1alpha2
+apiVersion: cert-manager.io/v1
 kind: Issuer
 metadata:
   name: alidns-webhook-selfsign
@@ -221,7 +221,7 @@ spec:
 ---
 
 # Generate a CA Certificate used to sign certificates for the webhook
-apiVersion: cert-manager.io/v1alpha2
+apiVersion: cert-manager.io/v1
 kind: Certificate
 metadata:
   name: alidns-webhook-ca
@@ -239,7 +239,7 @@ spec:
 ---
 
 # Create an Issuer that uses the above generated CA certificate to issue certs
-apiVersion: cert-manager.io/v1alpha2
+apiVersion: cert-manager.io/v1
 kind: Issuer
 metadata:
   name: alidns-webhook-ca
@@ -253,7 +253,7 @@ spec:
 ---
 
 # Finally, generate a serving certificate for the webhook to use
-apiVersion: cert-manager.io/v1alpha2
+apiVersion: cert-manager.io/v1
 kind: Certificate
 metadata:
   name: alidns-webhook-webhook-tls
