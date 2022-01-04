@@ -4,8 +4,8 @@ import (
 	"encoding/json"
 	"fmt"
 
-	apis "github.com/jetstack/cert-manager/pkg/apis/certmanager/v1alpha1"
-	extapi "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
+	cmmetav1 "github.com/jetstack/cert-manager/pkg/apis/meta/v1"
+	extapi "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
 )
 
 // Config is a structure that is used to decode into when
@@ -27,9 +27,9 @@ import (
 // be used by your provider here, you should reference a Kubernetes Secret
 // resource and fetch these credentials using a Kubernetes clientset.
 type Config struct {
-	Region             string                 `json:"region"`
-	AccessKeySecretRef apis.SecretKeySelector `json:"accessKeySecretRef"`
-	SecretKeySecretRef apis.SecretKeySelector `json:"secretKeySecretRef"`
+	Region             string                     `json:"region"`
+	AccessKeySecretRef cmmetav1.SecretKeySelector `json:"accessKeySecretRef"`
+	SecretKeySecretRef cmmetav1.SecretKeySelector `json:"secretKeySecretRef"`
 }
 
 // loadConfig is a small helper function that decodes JSON configuration into

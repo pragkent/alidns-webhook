@@ -25,6 +25,40 @@ rules:
 
 ---
 apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: alidns-webhook:flowcontrol-solver
+  labels:
+    app: alidns-webhook
+rules:
+  - apiGroups:
+      - "flowcontrol.apiserver.k8s.io"
+    resources:
+      - 'prioritylevelconfigurations'
+      - 'flowschemas'
+    verbs:
+      - 'list'
+      - 'watch'
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: alidns-webhook:flowcontrol-solver
+  labels:
+    app: alidns-webhook
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: alidns-webhook:flowcontrol-solver
+subjects:
+  - apiGroup: ""
+    kind: ServiceAccount
+    name: alidns-webhook
+    namespace: cert-manager
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
   name: alidns-webhook
@@ -153,7 +187,7 @@ spec:
       serviceAccountName: alidns-webhook
       containers:
         - name: alidns-webhook
-          image: pragkent/alidns-webhook:0.1.0
+          image: pragkent/alidns-webhook:0.1.1
           imagePullPolicy: IfNotPresent
           args:
             - --tls-cert-file=/tls/tls.crt
