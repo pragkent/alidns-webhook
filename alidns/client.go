@@ -6,7 +6,7 @@ import (
 	"github.com/aliyun/alibaba-cloud-sdk-go/sdk"
 	"github.com/aliyun/alibaba-cloud-sdk-go/sdk/auth"
 	"github.com/aliyun/alibaba-cloud-sdk-go/services/alidns"
-	"github.com/jetstack/cert-manager/pkg/issuer/acme/dns/util"
+	"github.com/cert-manager/cert-manager/pkg/issuer/acme/dns/util"
 )
 
 type Client struct {

@@ -6,15 +6,15 @@ import (
 	"strings"
 
 	"github.com/aliyun/alibaba-cloud-sdk-go/sdk/auth/credentials"
-	"github.com/jetstack/cert-manager/pkg/acme/webhook"
-	v1alpha1 "github.com/jetstack/cert-manager/pkg/acme/webhook/apis/acme/v1alpha1"
-	cmmetav1 "github.com/jetstack/cert-manager/pkg/apis/meta/v1"
-	"github.com/jetstack/cert-manager/pkg/issuer/acme/dns/util"
+	"github.com/cert-manager/cert-manager/pkg/acme/webhook"
+	v1alpha1 "github.com/cert-manager/cert-manager/pkg/acme/webhook/apis/acme/v1alpha1"
+	cmmetav1 "github.com/cert-manager/cert-manager/pkg/apis/meta/v1"
+	"github.com/cert-manager/cert-manager/pkg/issuer/acme/dns/util"
 	"github.com/pkg/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
-	"k8s.io/klog"
+	"k8s.io/klog/v2"
 )
 
 func NewSolver() webhook.Solver {
@@ -23,7 +23,7 @@ func NewSolver() webhook.Solver {
 
 // Solver implements the provider-specific logic needed to
 // 'present' an ACME challenge TXT record for your own DNS provider.
-// To do so, it must implement the `github.com/jetstack/cert-manager/pkg/acme/webhook.Solver`
+// To do so, it must implement the `github.com/cert-manager/cert-manager/pkg/acme/webhook.Solver`
 // interface.
 type Solver struct {
 	client *kubernetes.Clientset
