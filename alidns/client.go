@@ -29,6 +29,7 @@ func (c *Client) getHostedZone(zone string) (string, error) {
 	request.SearchMode = "EXACT"
 
 	response, err := c.dnsc.DescribeDomains(request)
+	fmt.Println(response)
 	if err != nil {
 		return "", err
 	}
