@@ -6,7 +6,7 @@ import (
 	"github.com/aliyun/alibaba-cloud-sdk-go/sdk"
 	"github.com/aliyun/alibaba-cloud-sdk-go/sdk/auth"
 	"github.com/aliyun/alibaba-cloud-sdk-go/services/alidns"
-	"github.com/jetstack/cert-manager/pkg/issuer/acme/dns/util"
+	"github.com/cert-manager/cert-manager/pkg/issuer/acme/dns/util"
 )
 
 type Client struct {
@@ -29,6 +29,7 @@ func (c *Client) getHostedZone(zone string) (string, error) {
 	request.SearchMode = "EXACT"
 
 	response, err := c.dnsc.DescribeDomains(request)
+	fmt.Println(response)
 	if err != nil {
 		return "", err
 	}

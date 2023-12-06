@@ -1,0 +1,8 @@
+FROM golang:1.21.4-alpine
+ENV GO111MODULE=on
+
+RUN apk add --no-cache git
+COPY . /workspace
+WORKDIR /workspace
+RUN go mod download
+ENTRYPOINT ["/bin/sleep", "43200"]

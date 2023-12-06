@@ -96,7 +96,7 @@ spec:
 
 3. Example Issuer
   ```yaml
-  apiVersion: certmanager.k8s.io/v1alpha1
+  apiVersion: certmanager.k8s.io/v1
   kind: ClusterIssuer
   metadata:
     name: letsencrypt-staging

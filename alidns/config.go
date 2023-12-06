@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 
-	cmmetav1 "github.com/jetstack/cert-manager/pkg/apis/meta/v1"
+	cmmetav1 "github.com/cert-manager/cert-manager/pkg/apis/meta/v1"
 	extapi "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
 )
 
